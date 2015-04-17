@@ -160,8 +160,10 @@ class CRM_Utils_JSON {
    * @return string
    *
    */
-  static function encodeDataTable($params, $selectorElements) {
+  static function encodeDataTable($params, $iTotal, $iFilteredTotal, $selectorElements) {
     $sOutput = '{';
+    $sOutput .= '"recordsTotal": ' . $iTotal . ', ';
+    $sOutput .= '"recordsFiltered": ' . $iFilteredTotal . ', ';
     $sOutput .= '"data": [ ';
     foreach ($params as $key => $value) {
       $addcomma = FALSE;

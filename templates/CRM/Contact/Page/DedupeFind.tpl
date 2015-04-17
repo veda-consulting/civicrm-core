@@ -184,6 +184,8 @@ CRM.$(function($) {
     //"scrollX": true, // doesn't work with hover popup for for icons
     "lengthMenu": [[10, 25, 50, 100, 1000, 2000, -1], [10, 25, 50, 100, 1000, 2000, "All"]],
     "dom": 'flrtip',
+    "processing": true,
+    "serverSide": true,
     "ajax": sourceUrl,
     "columns"  : [
       {data: "is_selected_input"},

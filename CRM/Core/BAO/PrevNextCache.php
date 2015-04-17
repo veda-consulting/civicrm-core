@@ -216,7 +216,7 @@ WHERE  cacheKey     = %3 AND
       $selectString .= " , ".implode(' , ', $aliasArray);
     }
     $query = "
-SELECT {$selectString}
+SELECT SQL_CALC_FOUND_ROWS {$selectString}
 FROM   civicrm_prevnext_cache pn
        {$join}
 WHERE  (pn.cacheKey = %1 OR pn.cacheKey = %2)
