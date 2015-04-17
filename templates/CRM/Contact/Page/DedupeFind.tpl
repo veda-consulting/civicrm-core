@@ -81,7 +81,7 @@
     <input type='checkbox' id ='threshold' class='toggle-vis' data-column-main="12"  >  
         <label for="threshold">{ts}Threshold{/ts}&nbsp;</label>
   </div><br/>
-  <table id="dupePairs" class="nestedActivitySelector" cellspacing="0" width="100%">
+  <table id="dupePairs" class="nestedActivitySelector form-layout-compressed" cellspacing="0" width="100%">
     <thead>
       <tr class="columnheader"> 
         <th class="crm-dedupe-merge">&nbsp;</th>
