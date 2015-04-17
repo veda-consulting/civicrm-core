@@ -73,13 +73,13 @@
   <div>
     Show / Hide columns:
     <input type='checkbox' id ='steet-address' class='toggle-vis' data-column-main="7" data-column-dupe="8" >  
-        <label for="steet-address">{ts}Street Address {/ts}</label>
+        <label for="steet-address">{ts}Street Address{/ts}&nbsp;</label>
     <input type='checkbox' id ='post-code' class='toggle-vis' data-column-main="9" data-column-dupe="10" >  
-        <label for="post-code">{ts}Post Code {/ts}</label>
+        <label for="post-code">{ts}Post Code{/ts}&nbsp;</label>
     <input type='checkbox' id ='conflicts' class='toggle-vis' data-column-main="11"  >  
-        <label for="conflicts">{ts}Conflicts {/ts} </label>
+        <label for="conflicts">{ts}Conflicts{/ts}&nbsp; </label>
     <input type='checkbox' id ='threshold' class='toggle-vis' data-column-main="12"  >  
-        <label for="threshold">{ts}Threshold {/ts}</label>
+        <label for="threshold">{ts}Threshold{/ts}&nbsp;</label>
   </div><br/>
   <table id="dupePairs" class="display compact" cellspacing="0" width="100%">
     <thead>
@@ -239,7 +239,6 @@ CRM.$(function($) {
       column = table.column( $(this).attr('data-column-dupe') );
       column.visible( ! column.visible() );
     }
-       
   });
 });
 
