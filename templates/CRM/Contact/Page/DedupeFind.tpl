@@ -72,10 +72,14 @@
   </div><!-- /.crm-accordion-wrapper -->
   <div>
     Show / Hide columns:
-    <a class="toggle-vis" data-column-main="7" data-column-dupe="8">Street Address</a>, &nbsp;
-    <a class="toggle-vis" data-column-main="9" data-column-dupe="10">Post Code</a>, &nbsp;
-    <a class="toggle-vis" data-column-main="11">Conflicts</a>, &nbsp;
-    <a class="toggle-vis" data-column-main="12">Threshold</a>
+    <input type='checkbox' id ='steet-address' class='toggle-vis' data-column-main="7" data-column-dupe="8" >  
+        <label for="steet-address">{ts}Street Address{/ts}&nbsp;</label>
+    <input type='checkbox' id ='post-code' class='toggle-vis' data-column-main="9" data-column-dupe="10" >  
+        <label for="post-code">{ts}Post Code{/ts}&nbsp;</label>
+    <input type='checkbox' id ='conflicts' class='toggle-vis' data-column-main="11"  >  
+        <label for="conflicts">{ts}Conflicts{/ts}&nbsp; </label>
+    <input type='checkbox' id ='threshold' class='toggle-vis' data-column-main="12"  >  
+        <label for="threshold">{ts}Threshold{/ts}&nbsp;</label>
   </div><br/>
   <table id="dupePairs" class="display compact" cellspacing="0" width="100%">
     <thead>
@@ -247,8 +251,7 @@ CRM.$(function($) {
   });
 
   // show / hide columns
-  $('a.toggle-vis').on('click', function (e) {
-    e.preventDefault();
+  $('input.toggle-vis').on('click', function (e) {
     var column = table.column( $(this).attr('data-column-main') );
     column.visible( ! column.visible() );
 
