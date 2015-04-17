@@ -231,7 +231,6 @@ CRM.$(function($) {
 
   // show / hide columns
   $('input.toggle-vis').on('click', function (e) {
-    //e.preventDefault();
     var column = table.column( $(this).attr('data-column-main') );
     column.visible( ! column.visible() );
 
