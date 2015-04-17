@@ -729,7 +729,7 @@ LIMIT {$offset}, {$rowCount}
     }
     foreach ($_REQUEST['columns'] as $columnInfo) {
       if (!empty($columnInfo['search']['value'])) {
-        ${$columnInfo['data']} = $columnInfo['search']['value'];
+        ${$columnInfo['data']} = CRM_Utils_Type::escape($columnInfo['search']['value'], 'String');
       }
     }
 
