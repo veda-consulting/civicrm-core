@@ -72,10 +72,14 @@
   </div><!-- /.crm-accordion-wrapper -->
   <div>
     Show / Hide columns:
-    <a class="toggle-vis" data-column-main="7" data-column-dupe="8">Street Address</a>, &nbsp;
-    <a class="toggle-vis" data-column-main="9" data-column-dupe="10">Post Code</a>, &nbsp;
-    <a class="toggle-vis" data-column-main="11">Conflicts</a>, &nbsp;
-    <a class="toggle-vis" data-column-main="12">Threshold</a>
+    <input type='checkbox' id ='steet-address' class='toggle-vis' data-column-main="7" data-column-dupe="8" >  &nbsp;
+        <label for="steet-address">Street Address </label>
+    <input type='checkbox' id ='post-code' class='toggle-vis' data-column-main="9" data-column-dupe="10" >  &nbsp;
+        <label for="post-code">Post Code </label>
+    <input type='checkbox' id ='conflicts' class='toggle-vis' data-column-main="11"  >  &nbsp;
+        <label for="conflicts">Conflicts </label>
+    <input type='checkbox' id ='threshold' class='toggle-vis' data-column-main="12"  >  &nbsp;
+        <label for="threshold">Threshold </label>
   </div><br/>
   <table id="dupePairs" class="display compact" cellspacing="0" width="100%">
     <thead>
@@ -226,14 +230,25 @@ CRM.$(function($) {
   });
 
   // show / hide columns
-  $('a.toggle-vis').on('click', function (e) {
-    e.preventDefault();
-    var column = table.column( $(this).attr('data-column-main') );
-    column.visible( ! column.visible() );
+  $('input.toggle-vis').on('click', function (e) {
+    //e.preventDefault();
+    var attr = $(this).prop('checked');
+    if(attr) {
+        var column = table.column( $(this).attr('data-column-main') );
+        column.visible( ! column.visible() );
 
-    if ($(this).attr('data-column-dupe')) {
-      column = table.column( $(this).attr('data-column-dupe') );
-      column.visible( ! column.visible() );
+        if ($(this).attr('data-column-dupe')) {
+          column = table.column( $(this).attr('data-column-dupe') );
+          column.visible( ! column.visible() );
+        }
+    } else {
+        var column = table.column( $(this).attr('data-column-main') );
+        column.visible( ! column.visible() );
+
+        if ($(this).attr('data-column-dupe')) {
+          column = table.column( $(this).attr('data-column-dupe') );
+          column.visible( ! column.visible() );
+        }
     }
   });
 });
