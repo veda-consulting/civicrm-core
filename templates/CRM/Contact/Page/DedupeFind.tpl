@@ -81,9 +81,9 @@
     <input type='checkbox' id ='threshold' class='toggle-vis' data-column-main="12"  >  
         <label for="threshold">{ts}Threshold{/ts}&nbsp;</label>
   </div><br/>
-  <table id="dupePairs" class="display compact" cellspacing="0" width="100%">
+  <table id="dupePairs" class="nestedActivitySelector" cellspacing="0" width="100%">
     <thead>
-      <tr> 
+      <tr class="columnheader"> 
         <th class="crm-dedupe-merge">&nbsp;</th>
         <th class="crm-empty">&nbsp;</th>
         <th class="crm-contact">{ts}Contact{/ts} 1</th>
@@ -218,7 +218,7 @@ CRM.$(function($) {
       // Set the checked state of the checkbox in the table
       $('input.crm-dedupe-select', row).prop('checked', data.is_selected == 1);
       if (data.is_selected == 1) {
-        $(row).toggleClass('selected');
+        $(row).toggleClass('crm-row-selected');
       }
       // for action column at the last, set nowrap
       $('td:last', row).attr('nowrap','nowrap');
@@ -227,8 +227,8 @@ CRM.$(function($) {
 
   // apply selected class on click of a row
   $('#dupePairs tbody').on('click', 'tr', function() {
-    $(this).toggleClass('selected');
-    $('input.crm-dedupe-select', this).prop('checked', $(this).hasClass("selected"));
+    $(this).toggleClass('crm-row-selected');
+    $('input.crm-dedupe-select', this).prop('checked', $(this).hasClass('crm-row-selected'));
     var sth = $('input.crm-dedupe-select', this);
     toggleDedupeSelect(sth);
   });
