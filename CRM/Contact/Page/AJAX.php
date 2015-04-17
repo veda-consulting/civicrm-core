@@ -743,43 +743,37 @@ LIMIT {$offset}, {$rowCount}
       $join .= " INNER JOIN civicrm_contact contact2 ON pn.entity_id2 = contact2.id";
     }
     if ($src) {
-      $where .= " AND (contact1.display_name LIKE '%{$src}%' OR contact2.display_name LIKE '%{$src}%')";
+      $where .= " AND contact1.display_name LIKE '%{$src}%'";
     }
     if ($dst) {
-      $where .= " AND (contact2.display_name LIKE '%{$dst}%' OR contact1.display_name LIKE '%{$dst}%')";
+      $where .= " AND contact2.display_name LIKE '%{$dst}%'";
     }
     if ($src_email) {
       $join  .= " INNER JOIN civicrm_email email1 ON email1.contact_id = contact1.id";
-      $join  .= " INNER JOIN civicrm_email email2 ON email2.contact_id = contact2.id";
-      $where .= " AND ((email1.is_primary = 1 AND email1.email LIKE '%{$src_email}%') OR (email2.is_primary = 1 AND email2.email LIKE '%{$src_email}%'))";
+      $where .= " AND (email1.is_primary = 1 AND email1.email LIKE '%{$src_email}%')";
     }
     if ($dst_email) {
-      $join  .= " INNER JOIN civicrm_email email1 ON email1.contact_id = contact1.id";
       $join  .= " INNER JOIN civicrm_email email2 ON email2.contact_id = contact2.id";
-      $where .= " AND ((email2.is_primary = 1 AND email2.email LIKE '%{$dst_email}%') OR (email1.is_primary = 1 AND email1.email LIKE '%{$dst_email}%'))";
+      $where .= " AND (email2.is_primary = 1 AND email2.email LIKE '%{$dst_email}%')";
     }
     if ($src_postcode) {
       $join  .= " INNER JOIN civicrm_address addr1 ON addr1.contact_id = contact1.id";
-      $join  .= " INNER JOIN civicrm_address addr2 ON addr2.contact_id = contact2.id";
-      $where .= " AND ((addr1.is_primary = 1 AND addr1.postal_code LIKE '%{$src_postcode}%') OR (addr2.is_primary = 1 AND addr2.postal_code LIKE '%{$src_postcode}%'))";
+      $where .= " AND (addr1.is_primary = 1 AND addr1.postal_code LIKE '%{$src_postcode}%')";
       
     }
     if ($dst_postcode) {
-      $join  .= " INNER JOIN civicrm_address addr1 ON addr1.contact_id = contact1.id";
       $join  .= " INNER JOIN civicrm_address addr2 ON addr2.contact_id = contact2.id";
-      $where .= " AND ((addr2.is_primary = 1 AND addr2.postal_code LIKE '%{$dst_postcode}%') OR (addr1.is_primary = 1 AND addr1.postal_code LIKE '%{$dst_postcode}%'))";
+      $where .= " AND (addr2.is_primary = 1 AND addr2.postal_code LIKE '%{$dst_postcode}%')";
     }
     
     if ($src_street) {
       $join  .= " INNER JOIN civicrm_address addr1 ON addr1.contact_id = contact1.id";
-      $join  .= " INNER JOIN civicrm_address addr2 ON addr2.contact_id = contact2.id";
-      $where .= " AND ((addr1.is_primary = 1 AND addr1.street_address LIKE '%{$src_street}%') OR (addr2.is_primary = 1 AND addr2.street_address LIKE '%{$src_street}%'))";
+      $where .= " AND (addr1.is_primary = 1 AND addr1.street_address LIKE '%{$src_street}%')";
     }
     
     if ($dst_street) {
-      $join  .= " INNER JOIN civicrm_address addr1 ON addr1.contact_id = contact1.id";
       $join  .= " INNER JOIN civicrm_address addr2 ON addr2.contact_id = contact2.id";
-      $where .= " AND ((addr2.is_primary = 1 AND addr2.street_address LIKE '%{$dst_street}%') OR (addr1.is_primary = 1 AND addr1.street_address LIKE '%{$dst_street}%'))";
+      $where .= " AND (addr2.is_primary = 1 AND addr2.street_address LIKE '%{$dst_street}%')";
     }
 
     $join .= " LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND pn.entity_id2 = de.contact_id2 )";
