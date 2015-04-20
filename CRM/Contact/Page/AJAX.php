@@ -732,32 +732,48 @@ LIMIT {$offset}, {$rowCount}
         ${$columnInfo['data']} = CRM_Utils_Type::escape($columnInfo['search']['value'], 'String');
       }
     }
-
     $join  = '';
     $where = "de.id IS NULL";
     if ($selected) {
       $where .= ' AND pn.is_selected = 1';
     }
 
-    if ($firstName || $lastName || $src_email || $postalCode) {
+    if ($src || $dst || $src_email || $postalCode || $dst_email || $src_postcode || $dst_postcode || $src_street || $dst_street) {
       $join .= " INNER JOIN civicrm_contact contact1 ON pn.entity_id1 = contact1.id";
       $join .= " INNER JOIN civicrm_contact contact2 ON pn.entity_id2 = contact2.id";
     }
-    if ($firstName) {
-      $where .= " AND (contact1.first_name LIKE '%{$firstName}%' OR contact2.first_name LIKE '%{$firstName}%')";
+    if ($src) {
+      $where .= " AND contact1.display_name LIKE '%{$src}%'";
     }
-    if ($lastName) {
-      $where .= " AND (contact1.last_name LIKE '%{$lastName}%' OR contact2.last_name LIKE '%{$lastName}%')";
+    if ($dst) {
+      $where .= " AND contact2.display_name LIKE '%{$dst}%'";
     }
     if ($src_email) {
       $join  .= " INNER JOIN civicrm_email email1 ON email1.contact_id = contact1.id";
-      $join  .= " INNER JOIN civicrm_email email2 ON email2.contact_id = contact2.id";
-      $where .= " AND ((email1.is_primary = 1 AND email1.email LIKE '%{$src_email}%') OR (email2.is_primary = 1 AND email2.email LIKE '%{$src_email}%'))";
+      $where .= " AND (email1.is_primary = 1 AND email1.email LIKE '%{$src_email}%')";
     }
-    if ($postalCode) {
+    if ($dst_email) {
+      $join  .= " INNER JOIN civicrm_email email2 ON email2.contact_id = contact2.id";
+      $where .= " AND (email2.is_primary = 1 AND email2.email LIKE '%{$dst_email}%')";
+    }
+    if ($src_postcode) {
       $join  .= " INNER JOIN civicrm_address addr1 ON addr1.contact_id = contact1.id";
+      $where .= " AND (addr1.is_primary = 1 AND addr1.postal_code LIKE '%{$src_postcode}%')";
+      
+    }
+    if ($dst_postcode) {
       $join  .= " INNER JOIN civicrm_address addr2 ON addr2.contact_id = contact2.id";
-      $where .= " AND ((addr1.is_primary = 1 AND addr1.postal_code = '{$postalCode}') OR (addr2.is_primary = 1 AND addr2.postal_code = '{$postalCode}'))";
+      $where .= " AND (addr2.is_primary = 1 AND addr2.postal_code LIKE '%{$dst_postcode}%')";
+    }
+    
+    if ($src_street) {
+      $join  .= " INNER JOIN civicrm_address addr1 ON addr1.contact_id = contact1.id";
+      $where .= " AND (addr1.is_primary = 1 AND addr1.street_address LIKE '%{$src_street}%')";
+    }
+    
+    if ($dst_street) {
+      $join  .= " INNER JOIN civicrm_address addr2 ON addr2.contact_id = contact2.id";
+      $where .= " AND (addr2.is_primary = 1 AND addr2.street_address LIKE '%{$dst_street}%')";
     }
 
     $join .= " LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND pn.entity_id2 = de.contact_id2 )";
@@ -785,6 +801,45 @@ LIMIT {$offset}, {$rowCount}
       $join .= " LEFT JOIN civicrm_address ca1 ON (ca1.contact_id = pn.entity_id1 AND ca1.is_primary = 1 )";
       $join .= " LEFT JOIN civicrm_address ca2 ON (ca2.contact_id = pn.entity_id2 AND ca2.is_primary = 1 )";
     }
+    foreach ($_REQUEST['order'] as $orderInfo) {
+      if (!empty($orderInfo['column'])) {
+        $orderColumnNumber = $orderInfo['column'];
+        $dir               = $orderInfo['dir'];
+      }
+    }
+    $columnDetails = CRM_Utils_Array::value($orderColumnNumber, $_REQUEST['columns']);
+    if(!empty($columnDetails)) {
+      switch ($columnDetails['data']) {
+        case 'src':
+          $where .= " ORDER BY cc1.display_name {$dir}";
+          break;
+        case 'src_email':
+          $where .= " ORDER BY ce1.email {$dir}";
+          break;
+        case 'src_street':
+          $where .= " ORDER BY ca1.street_address {$dir}";
+          break;
+        case 'src_postcode':
+          $where .= " ORDER BY ca1.postal_code {$dir}";
+          break;
+        case 'dst':
+          $where .= " ORDER BY cc2.display_name {$dir}";
+          break;
+        case 'dst_email':
+          $where .= " ORDER BY ce2.email {$dir}";
+          break;
+        case 'dst_street':
+          $where .= " ORDER BY ca2.street_address {$dir}";
+          break;
+        case 'dst_postcode':
+          $where .= " ORDER BY ca2.postal_code {$dir}";
+          break;
+        default:
+          $where .= " ";
+          break;
+      }
+    }
+    
     $dupePairs = CRM_Core_BAO_PrevNextCache::retrieve($cacheKeyString, $join, $where, $offset, $rowCount, $select);
     $iFilteredTotal = CRM_Core_DAO::singleValueQuery("SELECT FOUND_ROWS()");
 
