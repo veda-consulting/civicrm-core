@@ -733,47 +733,54 @@ LIMIT {$offset}, {$rowCount}
       }
     }
     $join  = '';
-    $where = "de.id IS NULL";
+    $where = array('( de.id IS NULL )');
     if ($selected) {
-      $where .= ' AND pn.is_selected = 1';
+      $where [] = 'pn.is_selected = 1';
     }
 
-    if ($src || $dst || $src_email || $postalCode || $dst_email || $src_postcode || $dst_postcode || $src_street || $dst_street) {
-      $join .= " INNER JOIN civicrm_contact contact1 ON pn.entity_id1 = contact1.id";
-      $join .= " INNER JOIN civicrm_contact contact2 ON pn.entity_id2 = contact2.id";
+    $searchData = CRM_Utils_Array::value('search', $_REQUEST);
+    $tmp = array();
+    if ($src || !empty($searchData['value']) ) {
+      $src = $src ? $src : $searchData['value'];
+      $tmp[] = " cc1.display_name LIKE '%{$src}%'";
     }
-    if ($src) {
-      $where .= " AND contact1.display_name LIKE '%{$src}%'";
+    if ($dst || !empty($searchData['value'])) {
+      $dst = $dst ? $dst : $searchData['value'];
+      $tmp[] = " cc2.display_name LIKE '%{$dst}%'";
     }
-    if ($dst) {
-      $where .= " AND contact2.display_name LIKE '%{$dst}%'";
+    if ($src_email || !empty($searchData['value'])) {
+      $src_email = $src_email ? $src_email : $searchData['value'];
+      $tmp[] = " (ce1.is_primary = 1 AND ce1.email LIKE '%{$src_email}%')";
     }
-    if ($src_email) {
-      $join  .= " INNER JOIN civicrm_email email1 ON email1.contact_id = contact1.id";
-      $where .= " AND (email1.is_primary = 1 AND email1.email LIKE '%{$src_email}%')";
+    if ($dst_email || !empty($searchData['value'])) {
+      $dst_email = $dst_email ? $dst_email : $searchData['value'];
+      $tmp[] = " (ce2.is_primary = 1 AND ce2.email LIKE '%{$dst_email}%')";
     }
-    if ($dst_email) {
-      $join  .= " INNER JOIN civicrm_email email2 ON email2.contact_id = contact2.id";
-      $where .= " AND (email2.is_primary = 1 AND email2.email LIKE '%{$dst_email}%')";
+    if ($src_postcode || !empty($searchData['value'])) {
+      $src_postcode = $src_postcode ? $src_postcode : $searchData['value'];
+      $tmp[] = " (ca1.is_primary = 1 AND ca1.postal_code LIKE '%{$src_postcode}%')";
     }
-    if ($src_postcode) {
-      $join  .= " INNER JOIN civicrm_address addr1 ON addr1.contact_id = contact1.id";
-      $where .= " AND (addr1.is_primary = 1 AND addr1.postal_code LIKE '%{$src_postcode}%')";
-      
+    if ($dst_postcode || !empty($searchData['value'])) {
+      $dst_postcode = $dst_postcode ? $dst_postcode : $searchData['value'];
+      $tmp[] = " (ca2.is_primary = 1 AND ca2.postal_code LIKE '%{$dst_postcode}%')";
     }
-    if ($dst_postcode) {
-      $join  .= " INNER JOIN civicrm_address addr2 ON addr2.contact_id = contact2.id";
-      $where .= " AND (addr2.is_primary = 1 AND addr2.postal_code LIKE '%{$dst_postcode}%')";
+    if ($src_street || !empty($searchData['value'])) {
+      $src_street = $src_street ? $src_street : $searchData['value'];
+      $tmp[] = " (ca1.is_primary = 1 AND ca1.street_address LIKE '%{$src_street}%')";
+    }
+    if ($dst_street || !empty($searchData['value'])) {
+      $dst_street = $dst_street ? $dst_street : $searchData['value'];
+      $tmp[] = " (ca2.is_primary = 1 AND ca2.street_address LIKE '%{$dst_street}%')";
     }
     
-    if ($src_street) {
-      $join  .= " INNER JOIN civicrm_address addr1 ON addr1.contact_id = contact1.id";
-      $where .= " AND (addr1.is_primary = 1 AND addr1.street_address LIKE '%{$src_street}%')";
-    }
-    
-    if ($dst_street) {
-      $join  .= " INNER JOIN civicrm_address addr2 ON addr2.contact_id = contact2.id";
-      $where .= " AND (addr2.is_primary = 1 AND addr2.street_address LIKE '%{$dst_street}%')";
+    if (!empty($searchData['value'])) {
+      $where[]  = ' ( '.implode(' OR ', $tmp).' ) ';
+      $where    = implode(' AND ', $where);
+    } else if (!empty ($tmp)) {
+      $where[]  = implode(' AND ', $tmp);
+      $where    = implode(' AND ', $where);
+    } else {
+      $where    = implode(' AND ', $where);
     }
 
     $join .= " LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND pn.entity_id2 = de.contact_id2 )";
@@ -794,7 +801,6 @@ LIMIT {$offset}, {$rowCount}
       'ca2.street_address'  => 'dst_street'
     );
    
-    $iTotal = CRM_Core_BAO_PrevNextCache::getCount($cacheKeyString, $join, $where);
     if($select) {
       $join .= " INNER JOIN civicrm_contact cc1 ON cc1.id = pn.entity_id1";
       $join .= " INNER JOIN civicrm_contact cc2 ON cc2.id = pn.entity_id2";
@@ -803,6 +809,7 @@ LIMIT {$offset}, {$rowCount}
       $join .= " LEFT JOIN civicrm_address ca1 ON (ca1.contact_id = pn.entity_id1 AND ca1.is_primary = 1 )";
       $join .= " LEFT JOIN civicrm_address ca2 ON (ca2.contact_id = pn.entity_id2 AND ca2.is_primary = 1 )";
     }
+    $iTotal = CRM_Core_BAO_PrevNextCache::getCount($cacheKeyString, $join, $where);
     foreach ($_REQUEST['order'] as $orderInfo) {
       if (!empty($orderInfo['column'])) {
         $orderColumnNumber = $orderInfo['column'];
@@ -841,20 +848,7 @@ LIMIT {$offset}, {$rowCount}
           break;
       }
     }
-    
-    $searchData = CRM_Utils_Array::value('search', $_REQUEST);
-    
-    if (!empty($searchData['value'])) {
-      $where .= " AND
-          ((cc1.display_name LIKE '%{$searchData['value']}%') OR
-          (ce1.email LIKE '%{$searchData['value']}%') OR
-          (ca1.street_address LIKE '%{$searchData['value']}%') OR
-          (ca1.postal_code LIKE '%{$searchData['value']}%') OR
-          (cc2.display_name LIKE '%{$searchData['value']}%') OR
-          (ce2.email LIKE '%{$searchData['value']}%') OR
-          (ca2.street_address LIKE '%{$searchData['value']}%') OR
-          (ca2.postal_code LIKE '%{$searchData['value']}%')) ";
-    }
+     
     $dupePairs = CRM_Core_BAO_PrevNextCache::retrieve($cacheKeyString, $join, $where, $offset, $rowCount, $select);
     $iFilteredTotal = CRM_Core_DAO::singleValueQuery("SELECT FOUND_ROWS()");
 
