@@ -775,11 +775,7 @@ LIMIT {$offset}, {$rowCount}
         $whereClause  = implode(' AND ', $where);
       }
     } 
-    if ($whereClause == '') {
-      $whereClause .= ' de.id IS NULL';
-    } else {
-      $whereClause .= ' AND de.id IS NULL';
-    }
+      $whereClause .= $whereClause ? ' AND de.id IS NULL' : ' de.id IS NULL';
 
     if ($selected) {
       $whereClause .= ' AND pn.is_selected = 1';
