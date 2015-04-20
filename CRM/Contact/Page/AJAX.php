@@ -781,8 +781,10 @@ LIMIT {$offset}, {$rowCount}
     
     $select = array(
       'cc1.contact_type'    => 'src_contact_type',
+      'cc1.display_name'    => 'src_display_name',
       'cc1.contact_sub_type'=> 'src_contact_sub_type',
       'cc2.contact_type'    => 'dst_contact_type',
+      'cc2.display_name'    => 'dst_display_name',
       'cc2.contact_sub_type'=> 'dst_contact_sub_type',
       'ce1.email'           => 'src_email',
       'ce2.email'           => 'dst_email',
@@ -840,6 +842,19 @@ LIMIT {$offset}, {$rowCount}
       }
     }
     
+    $searchData = CRM_Utils_Array::value('search', $_REQUEST);
+    
+    if (!empty($searchData['value'])) {
+      $where .= " AND
+          ((cc1.display_name LIKE '%{$searchData['value']}%') OR
+          (ce1.email LIKE '%{$searchData['value']}%') OR
+          (ca1.street_address LIKE '%{$searchData['value']}%') OR
+          (ca1.postal_code LIKE '%{$searchData['value']}%') OR
+          (cc2.display_name LIKE '%{$searchData['value']}%') OR
+          (ce2.email LIKE '%{$searchData['value']}%') OR
+          (ca2.street_address LIKE '%{$searchData['value']}%') OR
+          (ca2.postal_code LIKE '%{$searchData['value']}%')) ";
+    }
     $dupePairs = CRM_Core_BAO_PrevNextCache::retrieve($cacheKeyString, $join, $where, $offset, $rowCount, $select);
     $iFilteredTotal = CRM_Core_DAO::singleValueQuery("SELECT FOUND_ROWS()");
 
