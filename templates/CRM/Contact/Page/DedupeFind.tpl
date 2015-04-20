@@ -180,6 +180,7 @@
 <script type="text/javascript">
 CRM.$(function($) {
   var sourceUrl = {/literal}'{$sourceUrl}'{literal};
+  var context   = {/literal}'{$context}'{literal};
   $('#dupePairs').dataTable({
     //"scrollX": true, // doesn't work with hover popup for for icons
     "lengthMenu": [[10, 25, 50, 100, 1000, 2000, -1], [10, 25, 50, 100, 1000, 2000, "All"]],
@@ -262,6 +263,12 @@ CRM.$(function($) {
       column.visible( ! column.visible() );
     }
   });
+  
+  if(context == 'conflicts') {
+      $('#conflicts').attr('checked', true);  
+      var column = table.column( $('#conflicts').attr('data-column-main') );
+      column.visible( ! column.visible() );
+  }
 });
 
 function toggleDedupeSelect(element) {
