@@ -733,56 +733,57 @@ LIMIT {$offset}, {$rowCount}
       }
     }
     $join  = '';
-    $where = array('( de.id IS NULL )');
-    if ($selected) {
-      $where [] = 'pn.is_selected = 1';
-    }
-
+    $where = array();
     $searchData = CRM_Utils_Array::value('search', $_REQUEST);
-    $tmp = array();
     if ($src || !empty($searchData['value']) ) {
       $src = $src ? $src : $searchData['value'];
-      $tmp[] = " cc1.display_name LIKE '%{$src}%'";
+      $where[] = " cc1.display_name LIKE '%{$src}%'";
     }
     if ($dst || !empty($searchData['value'])) {
       $dst = $dst ? $dst : $searchData['value'];
-      $tmp[] = " cc2.display_name LIKE '%{$dst}%'";
+      $where[] = " cc2.display_name LIKE '%{$dst}%'";
     }
     if ($src_email || !empty($searchData['value'])) {
       $src_email = $src_email ? $src_email : $searchData['value'];
-      $tmp[] = " (ce1.is_primary = 1 AND ce1.email LIKE '%{$src_email}%')";
+      $where[] = " (ce1.is_primary = 1 AND ce1.email LIKE '%{$src_email}%')";
     }
     if ($dst_email || !empty($searchData['value'])) {
       $dst_email = $dst_email ? $dst_email : $searchData['value'];
-      $tmp[] = " (ce2.is_primary = 1 AND ce2.email LIKE '%{$dst_email}%')";
+      $where[] = " (ce2.is_primary = 1 AND ce2.email LIKE '%{$dst_email}%')";
     }
     if ($src_postcode || !empty($searchData['value'])) {
       $src_postcode = $src_postcode ? $src_postcode : $searchData['value'];
-      $tmp[] = " (ca1.is_primary = 1 AND ca1.postal_code LIKE '%{$src_postcode}%')";
+      $where[] = " (ca1.is_primary = 1 AND ca1.postal_code LIKE '%{$src_postcode}%')";
     }
     if ($dst_postcode || !empty($searchData['value'])) {
       $dst_postcode = $dst_postcode ? $dst_postcode : $searchData['value'];
-      $tmp[] = " (ca2.is_primary = 1 AND ca2.postal_code LIKE '%{$dst_postcode}%')";
+      $where[] = " (ca2.is_primary = 1 AND ca2.postal_code LIKE '%{$dst_postcode}%')";
     }
     if ($src_street || !empty($searchData['value'])) {
       $src_street = $src_street ? $src_street : $searchData['value'];
-      $tmp[] = " (ca1.is_primary = 1 AND ca1.street_address LIKE '%{$src_street}%')";
+      $where[] = " (ca1.is_primary = 1 AND ca1.street_address LIKE '%{$src_street}%')";
     }
     if ($dst_street || !empty($searchData['value'])) {
       $dst_street = $dst_street ? $dst_street : $searchData['value'];
-      $tmp[] = " (ca2.is_primary = 1 AND ca2.street_address LIKE '%{$dst_street}%')";
+      $where[] = " (ca2.is_primary = 1 AND ca2.street_address LIKE '%{$dst_street}%')";
     }
-    
     if (!empty($searchData['value'])) {
-      $where[]  = ' ( '.implode(' OR ', $tmp).' ) ';
-      $where    = implode(' AND ', $where);
-    } else if (!empty ($tmp)) {
-      $where[]  = implode(' AND ', $tmp);
-      $where    = implode(' AND ', $where);
+      $whereClause   = ' ( '.implode(' OR ', $where).' ) ';
+    }
+    else {
+      if (!empty($where)) {
+        $whereClause  = implode(' AND ', $where);
+      }
+    } 
+    if ($whereClause == '') {
+      $whereClause .= ' de.id IS NULL';
     } else {
-      $where    = implode(' AND ', $where);
+      $whereClause .= ' AND de.id IS NULL';
     }
 
+    if ($selected) {
+      $whereClause .= ' AND pn.is_selected = 1';
+    }
     $join .= " LEFT JOIN civicrm_dedupe_exception de ON ( pn.entity_id1 = de.contact_id1 AND pn.entity_id2 = de.contact_id2 )";
     
     
@@ -809,7 +810,7 @@ LIMIT {$offset}, {$rowCount}
       $join .= " LEFT JOIN civicrm_address ca1 ON (ca1.contact_id = pn.entity_id1 AND ca1.is_primary = 1 )";
       $join .= " LEFT JOIN civicrm_address ca2 ON (ca2.contact_id = pn.entity_id2 AND ca2.is_primary = 1 )";
     }
-    $iTotal = CRM_Core_BAO_PrevNextCache::getCount($cacheKeyString, $join, $where);
+    $iTotal = CRM_Core_BAO_PrevNextCache::getCount($cacheKeyString, $join, $whereClause);
     foreach ($_REQUEST['order'] as $orderInfo) {
       if (!empty($orderInfo['column'])) {
         $orderColumnNumber = $orderInfo['column'];
@@ -820,36 +821,35 @@ LIMIT {$offset}, {$rowCount}
     if(!empty($columnDetails)) {
       switch ($columnDetails['data']) {
         case 'src':
-          $where .= " ORDER BY cc1.display_name {$dir}";
+          $whereClause .= " ORDER BY cc1.display_name {$dir}";
           break;
         case 'src_email':
-          $where .= " ORDER BY ce1.email {$dir}";
+          $whereClause .= " ORDER BY ce1.email {$dir}";
           break;
         case 'src_street':
-          $where .= " ORDER BY ca1.street_address {$dir}";
+          $whereClause .= " ORDER BY ca1.street_address {$dir}";
           break;
         case 'src_postcode':
-          $where .= " ORDER BY ca1.postal_code {$dir}";
+          $whereClause .= " ORDER BY ca1.postal_code {$dir}";
           break;
         case 'dst':
-          $where .= " ORDER BY cc2.display_name {$dir}";
+          $whereClause .= " ORDER BY cc2.display_name {$dir}";
           break;
         case 'dst_email':
-          $where .= " ORDER BY ce2.email {$dir}";
+          $whereClause .= " ORDER BY ce2.email {$dir}";
           break;
         case 'dst_street':
-          $where .= " ORDER BY ca2.street_address {$dir}";
+          $whereClause .= " ORDER BY ca2.street_address {$dir}";
           break;
         case 'dst_postcode':
-          $where .= " ORDER BY ca2.postal_code {$dir}";
+          $whereClause .= " ORDER BY ca2.postal_code {$dir}";
           break;
         default:
-          $where .= " ";
           break;
       }
     }
      
-    $dupePairs = CRM_Core_BAO_PrevNextCache::retrieve($cacheKeyString, $join, $where, $offset, $rowCount, $select);
+    $dupePairs = CRM_Core_BAO_PrevNextCache::retrieve($cacheKeyString, $join, $whereClause, $offset, $rowCount, $select);
     $iFilteredTotal = CRM_Core_DAO::singleValueQuery("SELECT FOUND_ROWS()");
 
     $count = 0;
