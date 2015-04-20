@@ -84,7 +84,7 @@
   <table id="dupePairs" class="nestedActivitySelector form-layout-compressed" cellspacing="0" width="100%">
     <thead>
       <tr class="columnheader"> 
-        <th class="crm-dedupe-merge">&nbsp;</th>
+        <th class="crm-dedupe-merge"><input type="checkbox" value="0" name="pnid_all" class="crm-dedupe-select-all"></th>
         <th class="crm-empty">&nbsp;</th>
         <th class="crm-contact">{ts}Contact{/ts} 1</th>
         <th class="crm-contact">{ts}Email{/ts} 1</th>
@@ -233,7 +233,24 @@ CRM.$(function($) {
     var sth = $('input.crm-dedupe-select', this);
     toggleDedupeSelect(sth);
   });
-
+  
+  $('#dupePairs thead tr .crm-dedupe-merge').on('click', function() {
+    var checked = $('.crm-dedupe-select-all').prop('checked');
+    if (checked) {
+      $("#dupePairs tbody tr input[type='checkbox']").prop('checked', true);
+    }
+    else{
+      $("#dupePairs tbody tr input[type='checkbox']").prop('checked', false);
+    }
+    
+    $('#dupePairs tbody tr').each(function() {
+      $(this).toggleClass('crm-row-selected');
+      var sth = $('input.crm-dedupe-select', this);
+      toggleDedupeSelect(sth);
+    });
+      
+  });
+    
   // inline search boxes placed in tfoot
   $('#dupePairsColFilters thead th').each( function () {
     var title = $('#dupePairs thead th').eq($(this).index()).text();
