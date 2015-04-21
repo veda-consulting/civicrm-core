@@ -977,34 +977,26 @@ LIMIT {$offset}, {$rowCount}
     $cacheKeyString .= $rgid ? "_{$rgid}" : '_0';
     $cacheKeyString .= $gid ? "_{$gid}" : '_0';
     
-    //check pnid is_array or integer
-    $isMulitple = 0;
-    if (is_array($pnid)) {
-      if (CRM_Utils_Array::crmIsEmptyArray($pnid)) {
-        CRM_Utils_System::civiExit();
-      }
-      $isMulitple = 1;
-    }
-    elseif (!CRM_Utils_Type::escape($pnid, 'Integer')) {
-      CRM_Utils_System::civiExit();
-    }
-    
     
     $params = array( 
       1 => array($isSelected, 'Boolean'),
       3 => array("$cacheKeyString%", 'String') // using % to address rows with conflicts as well
     );
-    
-    if ($isMulitple) {
+
+    //check pnid is_array or integer
+    $whereClause = NULL;
+    if (is_array($pnid) && !CRM_Utils_Array::crmIsEmptyArray($pnid)) {
       $pnid = implode(', ', $pnid);
-      if(!CRM_Utils_Type::escape($pnid, 'String')) {
-        CRM_Utils_System::civiExit();
+      if (CRM_Utils_Type::escape($pnid, 'String')) {
+        $whereClause = " id IN ( {$pnid} ) ";
       }
-      $whereClause = " id IN ( {$pnid} ) ";
     }
-    else{
+    elseif (CRM_Utils_Type::escape($pnid, 'Integer')) {
       $whereClause = " id = %2";
       $params[2]   = array($pnid, 'Integer');
+    }
+    else{
+      CRM_Utils_System::civiExit();
     }
     
     if (CRM_Utils_Type::escape($whereClause, 'String')) {
