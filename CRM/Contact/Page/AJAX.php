@@ -991,18 +991,15 @@ LIMIT {$offset}, {$rowCount}
         $whereClause = " id IN ( {$pnid} ) ";
       }
     }
-    elseif (CRM_Utils_Type::escape($pnid, 'Integer')) {
-      $whereClause = " id = %2";
-      $params[2]   = array($pnid, 'Integer');
-    }
-    else{
-      CRM_Utils_System::civiExit();
+    else {
+      if (CRM_Utils_Type::escape($pnid, 'Integer')) {
+        $whereClause = " id = %2";
+        $params[2]   = array($pnid, 'Integer');
+      }
     }
     
-    if (CRM_Utils_Type::escape($whereClause, 'String')) {
-      $sql = "UPDATE civicrm_prevnext_cache SET is_selected = %1 WHERE {$whereClause} AND cacheKey LIKE %3";
-      CRM_Core_DAO::executeQuery($sql, $params);
-    }
+    $sql = "UPDATE civicrm_prevnext_cache SET is_selected = %1 WHERE {$whereClause} AND cacheKey LIKE %3";
+    CRM_Core_DAO::executeQuery($sql, $params);
 
     CRM_Utils_System::civiExit();
   }
