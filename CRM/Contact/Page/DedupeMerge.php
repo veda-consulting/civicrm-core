@@ -34,7 +34,7 @@
  */
 class CRM_Contact_Page_DedupeMerge extends CRM_Core_Page{
 
-  const BATCHLIMIT = 5;
+  const BATCHLIMIT = 2;
 
   /**
    * Browse all rule groups
@@ -82,10 +82,13 @@ class CRM_Contact_Page_DedupeMerge extends CRM_Core_Page{
       $isSelected = 2; 
     }
 
-    $total = CRM_Core_BAO_PrevNextCache::getCount($cacheKeyString, NULL, $where);
+    $urlQry = "reset=1&action=update&rgid={$rgid}";
+    $urlQry = $gid ? ($urlQry . "&gid={$gid}") : $urlQry;
+
+    $total  = CRM_Core_BAO_PrevNextCache::getCount($cacheKeyString, NULL, $where);
     if ($total <= 0) {
       // Nothing to do.
-      return FALSE;
+      CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/contact/dedupefind', $urlQry));
     }
 
     // reset merge stats, so we compute new stats
@@ -95,18 +98,15 @@ class CRM_Contact_Page_DedupeMerge extends CRM_Core_Page{
       $task  = new CRM_Queue_Task(
         array ('CRM_Contact_Page_DedupeMerge', 'callBatchMerge'),
         array($rgid, $gid, $mode, TRUE, self::BATCHLIMIT, $isSelected),
-        "Processed " . $i*self::BATCHLIMIT . " pair of duplicates"
+        "Processed " . $i*self::BATCHLIMIT . " pair of duplicates out of " . $total
       );
 
       // Add the Task to the Queue
       $queue->createItem($task);
     }
 
-    $urlQry = "reset=1&action=update&rgid={$rgid}";
-    $urlQry = $gid ? ($urlQry . "&gid={$gid}") : $urlQry;
-    $urlQry .= "&context=conflicts";
-
     // Setup the Runner
+    $urlQry .= "&context=conflicts";
     $runner = new CRM_Queue_Runner(array(
       'title' => ts('Merging Duplicates..'),
       'queue' => $queue,
