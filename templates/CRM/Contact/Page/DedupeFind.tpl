@@ -81,6 +81,10 @@
     <input type='checkbox' id ='threshold' class='toggle-vis' data-column-main="12"  >  
         <label for="threshold">{ts}Threshold{/ts}&nbsp;</label>
   </div><br/>
+  <div id="crm-dedupe-display-selected-div" style="float:right;">
+    <input type='checkbox' id ='crm-dedupe-display-selected' class='crm-dedupe-display-selected' name="display-selected">
+    <label for="display-selected">{ts}Show Only selected{/ts}&nbsp;</label>  
+  </div>
   <table id="dupePairs" class="nestedActivitySelector form-layout-compressed" cellspacing="0" width="100%">
     <thead>
       <tr class="columnheader"> 
@@ -181,6 +185,13 @@
 CRM.$(function($) {
   var sourceUrl = {/literal}'{$sourceUrl}'{literal};
   var context   = {/literal}'{$context}'{literal};
+  $('#crm-dedupe-display-selected').on('click', function(){
+    reloadUrl = sourceUrl;
+    if($(this).prop('checked')){
+      reloadUrl = sourceUrl+'&selected=1';
+    }
+    $('#dupePairs').DataTable().ajax.url(reloadUrl).load();
+  });
   $('#dupePairs').dataTable({
     //"scrollX": true, // doesn't work with hover popup for for icons
     "lengthMenu": [[10, 25, 50, 100, 1000, 2000, -1, -2], [10, 25, 50, 100, 1000, 2000, "All Selected", "All"]],
@@ -226,6 +237,8 @@ CRM.$(function($) {
     }
   });
 
+  $('#crm-dedupe-display-selected-div').appendTo('#dupePairs_length');
+  
   // apply selected class on click of a row
   $('#dupePairs tbody').on('click', 'tr', function() {
     $(this).toggleClass('crm-row-selected');
