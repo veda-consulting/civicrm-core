@@ -987,6 +987,32 @@ LIMIT {$offset}, {$rowCount}
 
     CRM_Utils_System::civiExit();
   }
+  
+  static function toggleDedupeSelectAll() {
+    $rgid = CRM_Utils_Type::escape($_REQUEST['rgid'], 'Integer');
+    $gid  = CRM_Utils_Type::escape($_REQUEST['gid'], 'Integer');
+    $ids  = $_REQUEST['ids'];
+    $isSelected = CRM_Utils_Type::escape($_REQUEST['is_selected'], 'Boolean');
+    
+    $contactType = CRM_Core_DAO::getFieldValue('CRM_Dedupe_DAO_RuleGroup', $rgid, 'contact_type');
+    $cacheKeyString  = "merge $contactType";
+    $cacheKeyString .= $rgid ? "_{$rgid}" : '_0';
+    $cacheKeyString .= $gid ? "_{$gid}" : '_0';
+    
+    if (CRM_Utils_Array::crmIsEmptyArray($ids)) {
+      CRM_Utils_System::civiExit();
+    }
+    
+    $pnid = implode(', ', $ids);
+    $sql = "UPDATE civicrm_prevnext_cache SET is_selected = %1 WHERE id IN ( {$pnid} ) AND cacheKey LIKE %2";
+    $params = array( 
+      1 => array($isSelected, 'Boolean'),
+      2 => array("$cacheKeyString%", 'String') // using % to address rows with conflicts as well
+    );
+    CRM_Core_DAO::executeQuery($sql, $params);
+
+    CRM_Utils_System::civiExit();
+  }
 
   /**
    * @param $name

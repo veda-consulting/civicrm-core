@@ -242,13 +242,13 @@ CRM.$(function($) {
     else{
       $("#dupePairs tbody tr input[type='checkbox']").prop('checked', false);
     }
-    
+    var ids = [];
     $('#dupePairs tbody tr').each(function() {
       $(this).toggleClass('crm-row-selected');
       var sth = $('input.crm-dedupe-select', this);
-      toggleDedupeSelect(sth);
+      ids.push($(sth).prop('name').substr(5));
     });
-      
+    toggleDedupeSelectAll(ids, checked);
   });
     
   // inline search boxes placed in tfoot
@@ -300,6 +300,20 @@ function toggleDedupeSelect(element) {
   gid  = gid.length > 0 ? gid : 0;
   
   CRM.$.post(dataUrl, {pnid: id, rgid: rgid, gid: gid, is_selected: is_selected}, function (data) {
+    // nothing to do for now
+  }, 'json');
+}
+
+function toggleDedupeSelectAll(ids, is_selected) {
+
+  var dataUrl = {/literal}"{crmURL p='civicrm/ajax/toggleDedupeSelectAll' h=0 q='snippet=4'}"{literal};
+  var rgid = {/literal}"{$rgid}"{literal};
+  var gid = {/literal}"{$gid}"{literal};
+
+  rgid = rgid.length > 0 ? rgid : 0;
+  gid  = gid.length > 0 ? gid : 0;
+  
+  CRM.$.post(dataUrl, {ids: ids, rgid: rgid, gid: gid, is_selected: is_selected}, function (data) {
     // nothing to do for now
   }, 'json');
 }
