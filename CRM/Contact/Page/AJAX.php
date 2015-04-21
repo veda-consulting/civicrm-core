@@ -697,12 +697,16 @@ LIMIT {$offset}, {$rowCount}
   static function getDedupes() {
     $offset    = isset($_REQUEST['start']) ? CRM_Utils_Type::escape($_REQUEST['start'], 'Integer') : 0;
     $rowCount  = isset($_REQUEST['length']) ? CRM_Utils_Type::escape($_REQUEST['length'], 'Integer') : 25;
-    $sort      = 'sort_name';
-    $sortOrder = isset($_REQUEST['sSortDir_0']) ? CRM_Utils_Type::escape($_REQUEST['sSortDir_0'], 'String') : 'asc';
 
     $gid         = isset($_REQUEST['gid']) ? CRM_Utils_Type::escape($_REQUEST['gid'], 'Integer') : 0;
     $rgid        = isset($_REQUEST['rgid']) ? CRM_Utils_Type::escape($_REQUEST['rgid'], 'Integer') : 0;
     $selected    = isset($_REQUEST['selected']) ? 1 : 0;
+    if ($rowCount < 0) {
+      if ($rowCount == -1) {
+        $selected = 1;
+      }
+      $rowCount = 0;
+    }
     $contactType = '';
     if ($rgid) {
       $contactType = CRM_Core_DAO::getFieldValue('CRM_Dedupe_DAO_RuleGroup', $rgid, 'contact_type');
@@ -712,21 +716,6 @@ LIMIT {$offset}, {$rowCount}
     $searchRows       = array();
     $selectorElements = array('is_selected', 'is_selected_input', 'src_image', 'src', 'src_email', 'src_street', 'src_postcode', 'dst_image', 'dst', 'dst_email', 'dst_street', 'dst_postcode', 'conflicts', 'weight', 'actions');
 
-    if (CRM_Utils_Array::value('filter', $_REQUEST)) {
-      $filter     = CRM_Utils_Type::escape($_REQUEST['filter'], 'String');
-    }
-    if (CRM_Utils_Array::value('firstName', $_REQUEST)) {
-      $firstName  = CRM_Utils_Type::escape($_REQUEST['firstName'], 'String');
-    }
-    if (CRM_Utils_Array::value('lastName', $_REQUEST)) {
-      $lastName   = CRM_Utils_Type::escape($_REQUEST['lastName'], 'String');
-    }
-    if (CRM_Utils_Array::value('email', $_REQUEST)) {
-      $email      = CRM_Utils_Type::escape($_REQUEST['email'], 'String');
-    }
-    if (CRM_Utils_Array::value('postalCode', $_REQUEST)) {
-      $postalCode = CRM_Utils_Type::escape($_REQUEST['postalCode'], 'String');
-    }
     foreach ($_REQUEST['columns'] as $columnInfo) {
       if (!empty($columnInfo['search']['value'])) {
         ${$columnInfo['data']} = CRM_Utils_Type::escape($columnInfo['search']['value'], 'String');
