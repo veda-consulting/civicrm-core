@@ -393,12 +393,12 @@
 <item>
      <path>civicrm/ajax/toggleDedupeSelect</path>
      <page_callback>CRM_Contact_Page_AJAX::toggleDedupeSelect</page_callback>
-     <access_arguments>access CiviCRM</access_arguments>
+     <access_arguments>merge duplicate contacts</access_arguments>
 </item>
 <item>
      <path>civicrm/ajax/toggleDedupeSelectAll</path>
      <page_callback>CRM_Contact_Page_AJAX::toggleDedupeSelectAll</page_callback>
-     <access_arguments>access CiviCRM</access_arguments>
+     <access_arguments>merge duplicate contacts</access_arguments>
 </item>
 <item>
   <path>civicrm/activity/sms/add</path>

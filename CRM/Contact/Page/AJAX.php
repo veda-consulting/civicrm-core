@@ -1004,12 +1004,14 @@ LIMIT {$offset}, {$rowCount}
     }
     
     $pnid = implode(', ', $ids);
-    $sql = "UPDATE civicrm_prevnext_cache SET is_selected = %1 WHERE id IN ( {$pnid} ) AND cacheKey LIKE %2";
-    $params = array( 
-      1 => array($isSelected, 'Boolean'),
-      2 => array("$cacheKeyString%", 'String') // using % to address rows with conflicts as well
-    );
-    CRM_Core_DAO::executeQuery($sql, $params);
+    if(CRM_Utils_Type::escape($pnid, 'String')) {
+      $sql = "UPDATE civicrm_prevnext_cache SET is_selected = %1 WHERE id IN ( {$pnid} ) AND cacheKey LIKE %2";
+      $params = array( 
+        1 => array($isSelected, 'Boolean'),
+        2 => array("$cacheKeyString%", 'String') // using % to address rows with conflicts as well
+      );
+      CRM_Core_DAO::executeQuery($sql, $params);
+    }
 
     CRM_Utils_System::civiExit();
   }
