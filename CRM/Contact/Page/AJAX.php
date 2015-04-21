@@ -969,29 +969,7 @@ LIMIT {$offset}, {$rowCount}
   static function toggleDedupeSelect() {
     $rgid = CRM_Utils_Type::escape($_REQUEST['rgid'], 'Integer');
     $gid  = CRM_Utils_Type::escape($_REQUEST['gid'], 'Integer');
-    $pnid = CRM_Utils_Type::escape($_REQUEST['pnid'], 'Integer');
-    $isSelected = CRM_Utils_Type::escape($_REQUEST['is_selected'], 'Boolean');
-    
-    $contactType = CRM_Core_DAO::getFieldValue('CRM_Dedupe_DAO_RuleGroup', $rgid, 'contact_type');
-    $cacheKeyString  = "merge $contactType";
-    $cacheKeyString .= $rgid ? "_{$rgid}" : '_0';
-    $cacheKeyString .= $gid ? "_{$gid}" : '_0';
-
-    $sql = "UPDATE civicrm_prevnext_cache SET is_selected = %1 WHERE id = %2 AND cacheKey LIKE %3";
-    $params = array( 
-      1 => array($isSelected, 'Boolean'),
-      2 => array($pnid, 'Integer'),
-      3 => array("$cacheKeyString%", 'String') // using % to address rows with conflicts as well
-    );
-    CRM_Core_DAO::executeQuery($sql, $params);
-
-    CRM_Utils_System::civiExit();
-  }
-  
-  static function toggleDedupeSelectAll() {
-    $rgid = CRM_Utils_Type::escape($_REQUEST['rgid'], 'Integer');
-    $gid  = CRM_Utils_Type::escape($_REQUEST['gid'], 'Integer');
-    $ids  = $_REQUEST['ids'];
+    $pnid = $_REQUEST['pnid'];
     $isSelected = CRM_Utils_Type::escape($_REQUEST['is_selected'], 'Boolean');
     
     $contactType = CRM_Core_DAO::getFieldValue('CRM_Dedupe_DAO_RuleGroup', $rgid, 'contact_type');
@@ -999,23 +977,44 @@ LIMIT {$offset}, {$rowCount}
     $cacheKeyString .= $rgid ? "_{$rgid}" : '_0';
     $cacheKeyString .= $gid ? "_{$gid}" : '_0';
     
-    if (CRM_Utils_Array::crmIsEmptyArray($ids)) {
+    //check pnid is_array or integer
+    $isMulitple = 0;
+    if (is_array($pnid)) {
+      if (CRM_Utils_Array::crmIsEmptyArray($pnid)) {
+        CRM_Utils_System::civiExit();
+      }
+      $isMulitple = 1;
+    }
+    elseif (!CRM_Utils_Type::escape($pnid, 'Integer')) {
       CRM_Utils_System::civiExit();
     }
     
-    $pnid = implode(', ', $ids);
-    if(CRM_Utils_Type::escape($pnid, 'String')) {
-      $sql = "UPDATE civicrm_prevnext_cache SET is_selected = %1 WHERE id IN ( {$pnid} ) AND cacheKey LIKE %2";
-      $params = array( 
-        1 => array($isSelected, 'Boolean'),
-        2 => array("$cacheKeyString%", 'String') // using % to address rows with conflicts as well
-      );
+    
+    $params = array( 
+      1 => array($isSelected, 'Boolean'),
+      3 => array("$cacheKeyString%", 'String') // using % to address rows with conflicts as well
+    );
+    
+    if ($isMulitple) {
+      $pnid = implode(', ', $pnid);
+      if(!CRM_Utils_Type::escape($pnid, 'String')) {
+        CRM_Utils_System::civiExit();
+      }
+      $whereClause = " id IN ( {$pnid} ) ";
+    }
+    else{
+      $whereClause = " id = %2";
+      $params[2]   = array($pnid, 'Integer');
+    }
+    
+    if (CRM_Utils_Type::escape($whereClause, 'String')) {
+      $sql = "UPDATE civicrm_prevnext_cache SET is_selected = %1 WHERE {$whereClause} AND cacheKey LIKE %3";
       CRM_Core_DAO::executeQuery($sql, $params);
     }
 
     CRM_Utils_System::civiExit();
   }
-
+  
   /**
    * @param $name
    *
