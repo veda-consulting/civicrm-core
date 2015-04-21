@@ -238,9 +238,11 @@ CRM.$(function($) {
     var checked = $('.crm-dedupe-select-all').prop('checked');
     if (checked) {
       $("#dupePairs tbody tr input[type='checkbox']").prop('checked', true);
+      $("#dupePairs tbody tr").addClass('crm-row-selected');
     }
     else{
       $("#dupePairs tbody tr input[type='checkbox']").prop('checked', false);
+      $("#dupePairs tbody tr").removeClass('crm-row-selected');
     }
     var sth = $('#dupePairs tbody tr');
     toggleDedupeSelect(sth, 1);
@@ -291,7 +293,6 @@ function toggleDedupeSelect(element, isMultiple) {
   else {
     var id = [];
     CRM.$(element).each(function() {
-      CRM.$(this).toggleClass('crm-row-selected');
       var sth = CRM.$('input.crm-dedupe-select', this);
       id.push(CRM.$(sth).prop('name').substr(5));
     });
