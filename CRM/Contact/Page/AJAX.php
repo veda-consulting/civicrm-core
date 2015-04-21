@@ -987,15 +987,13 @@ LIMIT {$offset}, {$rowCount}
     $whereClause = NULL;
     if (is_array($pnid) && !CRM_Utils_Array::crmIsEmptyArray($pnid)) {
       $pnid = implode(', ', $pnid);
-      if (CRM_Utils_Type::escape($pnid, 'String')) {
-        $whereClause = " id IN ( {$pnid} ) ";
-      }
+      $pnid = CRM_Utils_Type::escape($pnid, 'String');
+      $whereClause = " id IN ( {$pnid} ) ";
     }
     else {
-      if (CRM_Utils_Type::escape($pnid, 'Integer')) {
-        $whereClause = " id = %2";
-        $params[2]   = array($pnid, 'Integer');
-      }
+      $pnid = CRM_Utils_Type::escape($pnid, 'Integer');
+      $whereClause = " id = %2";
+      $params[2]   = array($pnid, 'Integer');
     }
     
     $sql = "UPDATE civicrm_prevnext_cache SET is_selected = %1 WHERE {$whereClause} AND cacheKey LIKE %3";
