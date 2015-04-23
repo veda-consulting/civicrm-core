@@ -81,14 +81,14 @@
     <input type='checkbox' id ='threshold' class='toggle-vis' data-column-main="12"  >  
         <label for="threshold">{ts}Threshold{/ts}&nbsp;</label>
   </div><br/>
-  <div id="crm-dedupe-display-selected-div" style="float:right;">
-    <input type='checkbox' id ='crm-dedupe-display-selected' class='crm-dedupe-display-selected' name="display-selected">
-    <label for="display-selected">{ts}Show Only selected{/ts}&nbsp;</label>  
-  </div>
+  <span id="dupePairs_length_selection">
+    <input type='checkbox' id ='crm-dedupe-display-selection' name="display-selection">
+    <label for="display-selection">{ts}Within Selections{/ts}&nbsp;</label>  
+  </span>
   <table id="dupePairs" class="nestedActivitySelector form-layout-compressed" cellspacing="0" width="100%">
     <thead>
       <tr class="columnheader"> 
-        <th class="crm-dedupe-merge"><input type="checkbox" value="0" name="pnid_all" class="crm-dedupe-select-all"></th>
+        <th class="crm-dedupe-selection"><input type="checkbox" value="0" name="pnid_all" class="crm-dedupe-select-all"></th>
         <th class="crm-empty">&nbsp;</th>
         <th class="crm-contact">{ts}Contact{/ts} 1</th>
         <th class="crm-contact">{ts}Email{/ts} 1</th>
@@ -185,16 +185,9 @@
 CRM.$(function($) {
   var sourceUrl = {/literal}'{$sourceUrl}'{literal};
   var context   = {/literal}'{$context}'{literal};
-  $('#crm-dedupe-display-selected').on('click', function(){
-    reloadUrl = sourceUrl;
-    if($(this).prop('checked')){
-      reloadUrl = sourceUrl+'&selected=1';
-    }
-    $('#dupePairs').DataTable().ajax.url(reloadUrl).load();
-  });
-  $('#dupePairs').dataTable({
+  $('#dupePairs').DataTable({
     //"scrollX": true, // doesn't work with hover popup for for icons
-    "lengthMenu": [[10, 25, 50, 100, 1000, 2000, -1, -2], [10, 25, 50, 100, 1000, 2000, "All Selected", "All"]],
+    "lengthMenu": [[10, 25, 50, 100, 1000, 2000, -1], [10, 25, 50, 100, 1000, 2000, "All"]],
     "dom": 'flrtip',
     "processing": true,
     "serverSide": true,
@@ -237,17 +230,26 @@ CRM.$(function($) {
     }
   });
 
-  $('#crm-dedupe-display-selected-div').appendTo('#dupePairs_length');
+  // redraw datatable if searching within selected records
+  $('#crm-dedupe-display-selection').on('click', function(){
+    reloadUrl = sourceUrl;
+    if($(this).prop('checked')){
+      reloadUrl = sourceUrl+'&selected=1';
+    }
+    $('#dupePairs').DataTable().ajax.url(reloadUrl).draw();
+  });
+
+  $('#dupePairs_length_selection').appendTo('#dupePairs_length');
   
   // apply selected class on click of a row
   $('#dupePairs tbody').on('click', 'tr', function() {
     $(this).toggleClass('crm-row-selected');
     $('input.crm-dedupe-select', this).prop('checked', $(this).hasClass('crm-row-selected'));
-    var sth = $('input.crm-dedupe-select', this);
-    toggleDedupeSelect(sth, 0);
+    var ele = $('input.crm-dedupe-select', this);
+    toggleDedupeSelect(ele, 0);
   });
   
-  $('#dupePairs thead tr .crm-dedupe-merge').on('click', function() {
+  $('#dupePairs thead tr .crm-dedupe-selection').on('click', function() {
     var checked = $('.crm-dedupe-select-all').prop('checked');
     if (checked) {
       $("#dupePairs tbody tr input[type='checkbox']").prop('checked', true);
@@ -257,8 +259,8 @@ CRM.$(function($) {
       $("#dupePairs tbody tr input[type='checkbox']").prop('checked', false);
       $("#dupePairs tbody tr").removeClass('crm-row-selected');
     }
-    var sth = $('#dupePairs tbody tr');
-    toggleDedupeSelect(sth, 1);
+    var ele = $('#dupePairs tbody tr');
+    toggleDedupeSelect(ele, 1);
   });
     
   // inline search boxes placed in tfoot
@@ -292,9 +294,9 @@ CRM.$(function($) {
   });
   
   if(context == 'conflicts') {
-      $('#conflicts').attr('checked', true);  
-      var column = table.column( $('#conflicts').attr('data-column-main') );
-      column.visible( ! column.visible() );
+    $('#conflicts').attr('checked', true);  
+    var column = table.column( $('#conflicts').attr('data-column-main') );
+    column.visible( ! column.visible() );
   }
 });
 

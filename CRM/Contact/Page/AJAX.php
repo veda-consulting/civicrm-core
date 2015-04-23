@@ -700,11 +700,8 @@ LIMIT {$offset}, {$rowCount}
 
     $gid         = isset($_REQUEST['gid']) ? CRM_Utils_Type::escape($_REQUEST['gid'], 'Integer') : 0;
     $rgid        = isset($_REQUEST['rgid']) ? CRM_Utils_Type::escape($_REQUEST['rgid'], 'Integer') : 0;
-    $selected    = isset($_REQUEST['selected']) ? $_REQUEST['selected'] : 0;
+    $selected    = isset($_REQUEST['selected']) ? CRM_Utils_Type::escape($_REQUEST['selected'], 'Integer') : 0;
     if ($rowCount < 0) {
-      if ($rowCount == -1) {
-        $selected = 1;
-      }
       $rowCount = 0;
     }
     $contactType = '';
