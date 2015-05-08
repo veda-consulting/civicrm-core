@@ -91,9 +91,9 @@
         <th class="crm-dedupe-selection"><input type="checkbox" value="0" name="pnid_all" class="crm-dedupe-select-all"></th>
         <th class="crm-empty">&nbsp;</th>
         <th class="crm-contact">{ts}Contact{/ts} 1</th>
-        <th class="crm-contact">{ts}Email{/ts} 1</th>
         <th class="crm-empty">&nbsp;</th>
         <th class="crm-contact-duplicate">{ts}Contact{/ts} 2 ({ts}Duplicate{/ts})</th>
+        <th class="crm-contact">{ts}Email{/ts} 1</th>
         <th class="crm-contact-duplicate">{ts}Email{/ts} 2 ({ts}Duplicate{/ts})</th>
         <th class="crm-contact">{ts}Street Address{/ts} 1</th>
         <th class="crm-contact-duplicate">{ts}Street Address{/ts} 2 ({ts}Duplicate{/ts})</th>
@@ -196,9 +196,9 @@ CRM.$(function($) {
       {data: "is_selected_input"},
       {data: "src_image"},
       {data: "src"},
-      {data: "src_email"},
       {data: "dst_image"},
       {data: "dst"},
+      {data: "src_email"},
       {data: "dst_email"},
       {data: "src_street"},
       {data: "dst_street"},
@@ -211,7 +211,7 @@ CRM.$(function($) {
     "order": [], // removes default order by for column 1 (checkbox)
     "columnDefs": [ 
       {
-        "targets": [0, 1, 4, 13],
+        "targets": [0, 1, 3, 13],
         "orderable": false
       },
       {
