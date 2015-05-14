@@ -170,6 +170,8 @@
    {/if}
    <a href="{$backURL}" title="{ts}Batch Merge Duplicate Contacts{/ts}" onclick="return confirm('{ts escape="js"}This will run the batch merge process on the listed duplicates. The operation will run in safe mode - only records with no direct data conflicts will be merged. Click OK to proceed if you are sure you wish to run this operation.{/ts}');" class="button"><span>{ts}Batch Merge All Duplicates{/ts}</span></a>
 
+   <a href="#" title="{ts}Flip Selected Duplicates{/ts}" onClick="flipSelectedDupePairs( );return false;" class="button"><span>{ts}Flip Selected Duplicates{/ts}</span></a>
+
    {capture assign=backURL}{crmURL p="civicrm/contact/deduperules" q="reset=1" a=1}{/capture}
   <a href="{$backURL}" class="button crm-button-type-cancel"><span>{ts}Done{/ts}</span></a>
 {/if}
@@ -323,6 +325,22 @@ function toggleDedupeSelect(element, isMultiple) {
   
   CRM.$.post(dataUrl, {pnid: id, rgid: rgid, gid: gid, is_selected: is_selected}, function (data) {
     // nothing to do for now
+  }, 'json');
+}
+
+function flipSelectedDupePairs( ) {
+  var ids = [];
+  CRM.$('.crm-row-selected').each(function() {
+    var ele = CRM.$('input.crm-dedupe-select', this);
+    ids.push(CRM.$(ele).attr('name').substr(5));
+  });
+  var dataUrl = {/literal}"{crmURL p='civicrm/ajax/flipDupePairs' h=0 q='snippet=4'}"{literal};
+  CRM.$.post(dataUrl, {pnid: ids}, function (data) {
+  }, 'json');
+}
+function flipDupePair(id) {
+  var dataUrl = {/literal}"{crmURL p='civicrm/ajax/flipDupePairs' h=0 q='snippet=4'}"{literal};
+  CRM.$.post(dataUrl, {pnid: id}, function (data) {
   }, 'json');
 }
 </script>

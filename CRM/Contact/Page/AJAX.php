@@ -836,43 +836,43 @@ LIMIT {$offset}, {$rowCount}
 
     $count = 0;
     foreach ($dupePairs as $key => $pairInfo) {
-      $pair =& $pairInfo['data'];
       $srcContactSubType  = CRM_Utils_Array::value('src_contact_sub_type', $pairInfo);
       $dstContactSubType  = CRM_Utils_Array::value('dst_contact_sub_type', $pairInfo);
       $srcTypeImage = CRM_Contact_BAO_Contact_Utils::getImage($srcContactSubType ?
         $srcContactSubType : $pairInfo['src_contact_type'],
         FALSE,
-        $pair['srcID']
+        $pairInfo['entity_id1']
       );
       $dstTypeImage = CRM_Contact_BAO_Contact_Utils::getImage($dstContactSubType ?
         $dstContactSubType : $pairInfo['dst_contact_type'],
         FALSE,
-        $pair['dstID']
+        $pairInfo['entity_id2']
       );
       
       $searchRows[$count]['is_selected'] = $pairInfo['is_selected'];
       $searchRows[$count]['is_selected_input'] = "<input type='checkbox' class='crm-dedupe-select' name='pnid_{$pairInfo['prevnext_id']}' value='{$pairInfo['is_selected']}' onclick='toggleDedupeSelect(this)'>";
       $searchRows[$count]['src_image'] = $srcTypeImage;
-      $searchRows[$count]['src'] = CRM_Utils_System::href($pair['srcName'], 'civicrm/contact/view', "reset=1&cid={$pair['srcID']}");
+      $searchRows[$count]['src'] = CRM_Utils_System::href($pairInfo['src_display_name'], 'civicrm/contact/view', "reset=1&cid={$pairInfo['entity_id1']}");
       $searchRows[$count]['src_email'] = CRM_Utils_Array::value('src_email', $pairInfo);
       $searchRows[$count]['src_street'] = CRM_Utils_Array::value('src_street', $pairInfo);
       $searchRows[$count]['src_postcode'] = CRM_Utils_Array::value('src_postcode', $pairInfo);
       $searchRows[$count]['dst_image'] = $dstTypeImage;
-      $searchRows[$count]['dst'] = CRM_Utils_System::href($pair['dstName'], 'civicrm/contact/view', "reset=1&cid={$pair['dstID']}");
+      $searchRows[$count]['dst'] = CRM_Utils_System::href($pairInfo['dst_display_name'], 'civicrm/contact/view', "reset=1&cid={$pairInfo['entity_id2']}");
       $searchRows[$count]['dst_email'] = CRM_Utils_Array::value('dst_email', $pairInfo);
       $searchRows[$count]['dst_street'] = CRM_Utils_Array::value('dst_street', $pairInfo);
       $searchRows[$count]['dst_postcode'] = CRM_Utils_Array::value('dst_postcode', $pairInfo);
       $searchRows[$count]['conflicts'] = CRM_Utils_Array::value('conflicts', $pair);
       $searchRows[$count]['weight'] = CRM_Utils_Array::value('weight', $pair);
 
-      if (!empty($pair['canMerge'])) {
-        $mergeParams = "reset=1&cid={$pair['srcID']}&oid={$pair['dstID']}&action=update&rgid={$rgid}";
+      if (!empty($pairInfo['data']['canMerge'])) {
+        $mergeParams = "reset=1&cid={$pairInfo['entity_id1']}&oid={$pairInfo['entity_id2']}&action=update&rgid={$rgid}";
         if ($gid) {
           $mergeParams .= "&gid={$gid}";
         }
 
-        $searchRows[$count]['actions'] = CRM_Utils_System::href(ts('merge'), 'civicrm/contact/merge', $mergeParams);
-        $searchRows[$count]['actions'] .= "&nbsp;|&nbsp;<a id='notDuplicate' href='#' onClick=\"processDupes( {$pair['srcID']}, {$pair['dstID']}, 'dupe-nondupe', 'dupe-listing'); return false;\">" . ts('not a duplicate') . "</a>";
+        $searchRows[$count]['actions']  = "<a class='crm-dedupe-flip' href='#' onClick=\"flipDupePair({$pairInfo['prevnext_id']}); return false;\">" . ts('flip') . "</a>&nbsp;|&nbsp;";
+        $searchRows[$count]['actions'] .= CRM_Utils_System::href(ts('merge'), 'civicrm/contact/merge', $mergeParams);
+        $searchRows[$count]['actions'] .= "&nbsp;|&nbsp;<a id='notDuplicate' href='#' onClick=\"processDupes( {$pairInfo['entity_id1']}, {$pairInfo['entity_id2']}, 'dupe-nondupe', 'dupe-listing'); return false;\">" . ts('not a duplicate') . "</a>";
       }
       else {
         $searchRows[$count]['actions'] = '<em>' . ts('Insufficient access rights - cannot merge') . '</em>';
@@ -884,6 +884,25 @@ LIMIT {$offset}, {$rowCount}
     echo CRM_Utils_JSON::encodeDataTable($searchRows, $iTotal, $iFilteredTotal, $selectorElements);
 
     CRM_Utils_System::civiExit();
+  }
+
+  static function flipDupePairs($prevNextId = NULL) {
+    if (!$prevNextId) {
+      $prevNextId = $_REQUEST['pnid'];
+    }
+    $query = "
+      UPDATE civicrm_prevnext_cache cpc
+      INNER JOIN civicrm_prevnext_cache old on cpc.id = old.id 
+      SET cpc.entity_id1 = cpc.entity_id2, cpc.entity_id2 = old.entity_id1 ";
+    if (is_array($prevNextId) && !CRM_Utils_Array::crmIsEmptyArray($prevNextId)) {
+      $prevNextId = implode(', ', $prevNextId);
+      $prevNextId = CRM_Utils_Type::escape($prevNextId, 'String');
+      $query     .= "WHERE cpc.id IN ({$prevNextId}) AND cpc.is_selected = 1";
+    } else {
+      $prevNextId = CRM_Utils_Type::escape($prevNextId, 'Positive');
+      $query     .= "WHERE cpc.id = $prevNextId";
+    }
+    CRM_Core_DAO::executeQuery($query);
   }
 
   /**
