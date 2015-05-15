@@ -170,7 +170,7 @@
    {/if}
    <a href="{$backURL}" title="{ts}Batch Merge Duplicate Contacts{/ts}" onclick="return confirm('{ts escape="js"}This will run the batch merge process on the listed duplicates. The operation will run in safe mode - only records with no direct data conflicts will be merged. Click OK to proceed if you are sure you wish to run this operation.{/ts}');" class="button"><span>{ts}Batch Merge All Duplicates{/ts}</span></a>
 
-   <a href="#" title="{ts}Flip Selected Duplicates{/ts}" onClick="flipSelectedDupePairs( );return false;" class="button"><span>{ts}Flip Selected Duplicates{/ts}</span></a>
+   <a href='#' title="{ts}Flip Selected Duplicates{/ts}" class="crm-dedupe-flip-selections button"><span>{ts}Flip Selected Duplicates{/ts}</span></a>
 
    {capture assign=backURL}{crmURL p="civicrm/contact/deduperules" q="reset=1" a=1}{/capture}
   <a href="{$backURL}" class="button crm-button-type-cancel"><span>{ts}Done{/ts}</span></a>
@@ -244,13 +244,14 @@ CRM.$(function($) {
   $('#dupePairs_length_selection').appendTo('#dupePairs_length');
   
   // apply selected class on click of a row
-  $('#dupePairs tbody').on('click', 'tr', function() {
+  $('#dupePairs tbody').on('click', 'tr', function(e) {
     $(this).toggleClass('crm-row-selected');
     $('input.crm-dedupe-select', this).prop('checked', $(this).hasClass('crm-row-selected'));
     var ele = $('input.crm-dedupe-select', this);
     toggleDedupeSelect(ele, 0);
   });
-  
+
+  // when select-all checkbox is checked
   $('#dupePairs thead tr .crm-dedupe-selection').on('click', function() {
     var checked = $('.crm-dedupe-select-all').prop('checked');
     if (checked) {
@@ -295,11 +296,58 @@ CRM.$(function($) {
     }
   });
   
+  // keep the conflicts checkbox checked when context is "conflicts"
   if(context == 'conflicts') {
     $('#conflicts').attr('checked', true);  
     var column = table.column( $('#conflicts').attr('data-column-main') );
     column.visible( ! column.visible() );
   }
+
+  // on click of flip link of a row
+  $('#dupePairs tbody').on('click', 'tr .crm-dedupe-flip', function(e) {
+    e.stopPropagation();
+    var $el   = $(this);
+    var $elTr = $(this).closest('tr');
+    var postUrl = {/literal}"{crmURL p='civicrm/ajax/flipDupePairs' h=0 q='snippet=4'}"{literal};
+    var request = $.post(postUrl, {pnid : $el.data('pnid')});
+    request.done(function(dt) {
+      var mapper = {2:4, 5:6, 7:8, 9:10}
+      var idx = table.row($elTr).index();
+      $.each(mapper, function(key, val) {
+        var v1  = table.cell(idx, key).data();
+        var v2  = table.cell(idx, val).data();
+        table.cell(idx, key).data(v2);
+        table.cell(idx, val).data(v1);
+      });
+      // keep the checkbox checked if needed
+      $('input.crm-dedupe-select', $elTr).prop('checked', $elTr.hasClass('crm-row-selected'));
+    });
+  });
+
+  $(".crm-dedupe-flip-selections").on('click', function(e) {
+    var ids = [];
+    $('.crm-row-selected').each(function() {
+      var ele = CRM.$('input.crm-dedupe-select', this);
+      ids.push(CRM.$(ele).attr('name').substr(5));
+    });
+    if (ids.length > 0) {
+      var dataUrl = {/literal}"{crmURL p='civicrm/ajax/flipDupePairs' h=0 q='snippet=4'}"{literal};
+      CRM.$.post(dataUrl, {pnid: ids}, function (response) {
+        var mapper = {2:4, 5:6, 7:8, 9:10}
+        $('.crm-row-selected').each(function() {
+          var idx = table.row(this).index();
+          $.each(mapper, function(key, val) {
+            var v1  = table.cell(idx, key).data();
+            var v2  = table.cell(idx, val).data();
+            table.cell(idx, key).data(v2);
+            table.cell(idx, val).data(v1);
+          });
+          // keep the checkbox checked if needed
+          $('input.crm-dedupe-select', this).prop('checked', $(this).hasClass('crm-row-selected'));
+        });
+      }, 'json');
+    }
+  });
 });
 
 function toggleDedupeSelect(element, isMultiple) {
@@ -325,22 +373,6 @@ function toggleDedupeSelect(element, isMultiple) {
   
   CRM.$.post(dataUrl, {pnid: id, rgid: rgid, gid: gid, is_selected: is_selected}, function (data) {
     // nothing to do for now
-  }, 'json');
-}
-
-function flipSelectedDupePairs( ) {
-  var ids = [];
-  CRM.$('.crm-row-selected').each(function() {
-    var ele = CRM.$('input.crm-dedupe-select', this);
-    ids.push(CRM.$(ele).attr('name').substr(5));
-  });
-  var dataUrl = {/literal}"{crmURL p='civicrm/ajax/flipDupePairs' h=0 q='snippet=4'}"{literal};
-  CRM.$.post(dataUrl, {pnid: ids}, function (data) {
-  }, 'json');
-}
-function flipDupePair(id) {
-  var dataUrl = {/literal}"{crmURL p='civicrm/ajax/flipDupePairs' h=0 q='snippet=4'}"{literal};
-  CRM.$.post(dataUrl, {pnid: id}, function (data) {
   }, 'json');
 }
 </script>

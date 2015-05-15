@@ -870,7 +870,7 @@ LIMIT {$offset}, {$rowCount}
           $mergeParams .= "&gid={$gid}";
         }
 
-        $searchRows[$count]['actions']  = "<a class='crm-dedupe-flip' href='#' onClick=\"flipDupePair({$pairInfo['prevnext_id']}); return false;\">" . ts('flip') . "</a>&nbsp;|&nbsp;";
+        $searchRows[$count]['actions']  = "<a class='crm-dedupe-flip' href='#' data-pnid={$pairInfo['prevnext_id']}>" . ts('flip') . "</a>&nbsp;|&nbsp;";
         $searchRows[$count]['actions'] .= CRM_Utils_System::href(ts('merge'), 'civicrm/contact/merge', $mergeParams);
         $searchRows[$count]['actions'] .= "&nbsp;|&nbsp;<a id='notDuplicate' href='#' onClick=\"processDupes( {$pairInfo['entity_id1']}, {$pairInfo['entity_id2']}, 'dupe-nondupe', 'dupe-listing'); return false;\">" . ts('not a duplicate') . "</a>";
       }
@@ -903,6 +903,7 @@ LIMIT {$offset}, {$rowCount}
       $query     .= "WHERE cpc.id = $prevNextId";
     }
     CRM_Core_DAO::executeQuery($query);
+    CRM_Utils_JSON::output();
   }
 
   /**
