@@ -836,6 +836,7 @@ LIMIT {$offset}, {$rowCount}
 
     $count = 0;
     foreach ($dupePairs as $key => $pairInfo) {
+      $pair =& $pairInfo['data'];
       $srcContactSubType  = CRM_Utils_Array::value('src_contact_sub_type', $pairInfo);
       $dstContactSubType  = CRM_Utils_Array::value('dst_contact_sub_type', $pairInfo);
       $srcTypeImage = CRM_Contact_BAO_Contact_Utils::getImage($srcContactSubType ?
@@ -861,7 +862,7 @@ LIMIT {$offset}, {$rowCount}
       $searchRows[$count]['dst_email'] = CRM_Utils_Array::value('dst_email', $pairInfo);
       $searchRows[$count]['dst_street'] = CRM_Utils_Array::value('dst_street', $pairInfo);
       $searchRows[$count]['dst_postcode'] = CRM_Utils_Array::value('dst_postcode', $pairInfo);
-      $searchRows[$count]['conflicts'] = CRM_Utils_Array::value('conflicts', $pair);
+      $searchRows[$count]['conflicts'] = str_replace("',", "',<br/>", CRM_Utils_Array::value('conflicts', $pair));
       $searchRows[$count]['weight'] = CRM_Utils_Array::value('weight', $pair);
 
       if (!empty($pairInfo['data']['canMerge'])) {

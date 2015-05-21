@@ -206,7 +206,10 @@ CRM.$(function($) {
       {data: "dst_street"},
       {data: "src_postcode"},
       {data: "dst_postcode"},
-      {data: "conflicts"},
+      {
+        data: "conflicts",
+        className: "crm-pair-conflict"
+      },
       {data: "weight"},
       {data: "actions"},
     ],
@@ -229,6 +232,8 @@ CRM.$(function($) {
       }
       // for action column at the last, set nowrap
       $('td:last', row).attr('nowrap','nowrap');
+      // for conflcts column
+      $('td.crm-pair-conflict', row).attr('nowrap','nowrap');
     }
   });
 
@@ -289,6 +294,10 @@ CRM.$(function($) {
   $('input.toggle-vis').on('click', function (e) {
     var column = table.column( $(this).attr('data-column-main') );
     column.visible( ! column.visible() );
+
+    // nowrap to conflicts column is applied only during initial rendering
+    // for show / hide clicks we need to set it explicitly
+    $('#dupePairs tbody td.crm-pair-conflict').attr('nowrap', 'nowrap');
 
     if ($(this).attr('data-column-dupe')) {
       column = table.column( $(this).attr('data-column-dupe') );
