@@ -643,6 +643,7 @@ class CRM_Core_Permission {
       'administer reserved tags' => $prefix . ts('administer reserved tags'),
       'administer dedupe rules' => $prefix . ts('administer dedupe rules'),
       'merge duplicate contacts' => $prefix . ts('merge duplicate contacts'),
+      'force merge duplicate contacts' => $prefix . ts('force merge duplicate contacts'),
       'view debug output' => $prefix . ts('view debug output'),
       'view all notes' => $prefix . ts('view all notes'),
       'access AJAX API' => $prefix . ts('access AJAX API'),
