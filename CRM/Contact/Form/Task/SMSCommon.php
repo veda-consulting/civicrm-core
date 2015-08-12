@@ -324,8 +324,8 @@ class CRM_Contact_Form_Task_SMSCommon {
       if (!empty($fields['sms_text_message'])) {
         $messageCheck = CRM_Utils_Array::value('sms_text_message', $fields);
         $messageCheck = str_replace("\r\n", "\n", $messageCheck);
-        if ($messageCheck && (strlen($messageCheck) > CRM_SMS_Provider::MAX_SMS_CHAR)) {
-          $errors['sms_text_message'] = ts("You can configure the SMS message body up to %1 characters", array(1 => CRM_SMS_Provider::MAX_SMS_CHAR));
+        if ($messageCheck && (strlen($messageCheck) > CRM_SMS_BAO_Provider::getMaxChar())) {
+          $errors['sms_text_message'] = ts("You can configure the SMS message body up to %1 characters", array(1 => CRM_SMS_BAO_Provider::getMaxChar()));
         }
       }
     }
@@ -347,26 +347,27 @@ class CRM_Contact_Form_Task_SMSCommon {
    * @return void
    */
   public static function postProcess(&$form) {
-
+    $prefix = 'SMS';
     // check and ensure that
     $thisValues = $form->controller->exportValues($form->getName());
 
     $fromSmsProviderId = $thisValues['sms_provider_id'];
 
     // process message template
-    if (!empty($thisValues['saveTemplate']) || !empty($thisValues['updateTemplate'])) {
+    if (!empty($thisValues[$prefix . 'saveTemplate']) || !empty($thisValues[$prefix . 'updateTemplate'])) {
       $messageTemplate = array(
         'msg_text' => $thisValues['sms_text_message'],
         'is_active' => TRUE,
       );
 
-      if (!empty($thisValues['saveTemplate'])) {
-        $messageTemplate['msg_title'] = $thisValues['saveTemplateName'];
+      if (!empty($thisValues[$prefix . 'saveTemplate'])) {
+        $messageTemplate['msg_title'] = $thisValues[$prefix . 'saveTemplateName'];
+        $messageTemplate['is_sms'] = 1;
         CRM_Core_BAO_MessageTemplate::add($messageTemplate);
       }
 
-      if (!empty($thisValues['template']) && !empty($thisValues['updateTemplate'])) {
-        $messageTemplate['id'] = $thisValues['template'];
+      if (!empty($thisValues[$prefix .'template']) && !empty($thisValues[$prefix . 'updateTemplate'])) {
+        $messageTemplate['id'] = $thisValues[$prefix .'template'];
         unset($messageTemplate['msg_title']);
         CRM_Core_BAO_MessageTemplate::add($messageTemplate);
       }
