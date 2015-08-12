@@ -182,5 +182,15 @@ class CRM_SMS_BAO_Provider extends CRM_SMS_DAO_Provider {
     }
     return $providerInfo[$providerID];
   }
-
+  
+  static function getMaxChar() {
+    $maxChar = CRM_SMS_Provider::MAX_SMS_CHAR;
+    $activeProviders = CRM_SMS_BAO_Provider::getProviders();
+    $activeProvider = CRM_Extension_System::singleton()->getMapper()->keyToClass($activeProviders[0]['name']);
+    if (!empty($activeProvider)) {
+      require_once $activeProvider . '.php';
+      $maxChar = $activeProvider::MAX_SMS_CHAR;
+    }
+    return $maxChar;
+  }
 }

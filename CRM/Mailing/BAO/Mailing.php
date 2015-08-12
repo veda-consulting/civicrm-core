@@ -2665,7 +2665,7 @@ LEFT JOIN civicrm_mailing_group g ON g.mailing_id   = m.id
       $prefix = NULL;
       if ($id == 'sms_text_message') {
         $prefix = "SMS";
-        $form->assign('max_sms_length', CRM_SMS_Provider::MAX_SMS_CHAR);
+        $form->assign('max_sms_length', CRM_SMS_BAO_Provider::getMaxChar());
       }
       $form->add('textarea', $id, $label,
         array(
